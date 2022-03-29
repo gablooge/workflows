@@ -1,0 +1,64 @@
+name: "Install and cache Poetry"
+author: "@grizz"
+#on:
+#  workflow_call:
+inputs:
+  python-version:
+    required: false
+    default: 3.x
+    type: string
+outputs:
+  venv-path:
+    description: "virtualenv path"
+    value: ${{ steps.get-venv-path.outputs.venv-path }}
+runs:
+  using: "composite"
+  steps:
+    - name: Set up python ${{ inputs.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Get Python version
+      shell: bash
+      run: |
+        echo "PYTHON_VERSION=$(python --version | awk '{ print $NF }')" >> $GITHUB_ENV
+    - name: Load cached Poetry installation
+      uses: actions/cache@v2
+      with:
+        path: ~/.local
+        key: dotlocal-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-0
+        # absolute path for hashFiles is broken
+#        key: dotlocal-${{ runner.os }}-${{ hashFiles(format('{0}/action.yaml', github.action_path)) }}
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        virtualenvs-create: true
+        # virtualenvs-in-project: true
+    - name: Get virtualenv path
+      shell: bash
+      run: echo "VENV_PATH=$(poetry env info -p)" >> $GITHUB_ENV
+    - name: Get virtualenv path
+      id: get-venv-path
+      shell: bash
+      run: |
+        # init the env / venv path
+        poetry install --dry-run
+        echo "::set-output name=venv-path::$(poetry env info -p)"
+    - name: venv path
+      shell: bash
+      run: echo "got venv path ${{ steps.get-venv-path.outputs.venv-path }}"
+    - name: Load cached venv
+      id: cached-poetry-venv
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.get-venv-path.outputs.venv-path }}
+        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+    - name: Ensure cache is healthy
+      if: steps.cached-poetry-venv.outputs.cache-hit == 'true'
+      shell: bash
+      run: timeout 10s poetry run pip --version || rm -rf .venv
+    # install dependencies if cache does not exist
+    - name: Check cache and install dependencies
+      shell: bash
+      run: poetry install --no-interaction

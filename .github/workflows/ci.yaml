@@ -1,0 +1,24 @@
+
+name: ci
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Install virtualenv from poetry
+        uses: ./poetry
+
+      - name: Run tests
+        shell: bash
+        run: |
+          pwd
+          which poetry
+          ls -alR ~/.local
+          echo venv
+          poetry env info 
