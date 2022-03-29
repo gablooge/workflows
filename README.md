@@ -2,7 +2,7 @@
 # GitHub Workflows
 
 
-[![Tests](https://github.com/20c/workflows/workflows/tests/badge.svg)](https://github.com/20c/workflows)
+[![Tests](https://github.com/20c/workflows/workflows/ci/badge.svg)](https://github.com/20c/workflows/actions/workflows/ci.yaml)
 
 
 ## poetry
@@ -21,6 +21,12 @@ outputs:
     value: ${{ steps.get-venv-path.outputs.venv-path }}
 ```
 
+## Release
+
+```sh
+git tag -a -m "bump v1" v1
+git push --follow-tags
+```
 
 ## License
 
