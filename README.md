@@ -21,6 +21,12 @@ outputs:
     value: ${{ steps.get-venv-path.outputs.venv-path }}
 ```
 
+To use:
+```yaml
+      - name: Install virtualenv from poetry
+        uses: 20c/workflows/poetry@v1
+```
+
 ## Release
 
 ```sh
@@ -30,7 +36,7 @@ git push --follow-tags
 
 ## License
 
-Copyright 2016-2021 20C, LLC
+Copyright 2022 20C, LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this software except in compliance with the License.
