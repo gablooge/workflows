@@ -15,7 +15,7 @@ runs:
   using: "composite"
   steps:
     - name: Set up python ${{ inputs.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ inputs.python-version }}
     - name: Get Python version
@@ -23,11 +23,11 @@ runs:
       run: |
         echo "PYTHON_VERSION=$(python --version | awk '{ print $NF }')" >> $GITHUB_ENV
     - name: Load cached Poetry installation
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/.local
         key: dotlocal-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-0
-        # absolute path for hashFiles is broken
+        # absolute path for hashFiles is broken on v2
 #        key: dotlocal-${{ runner.os }}-${{ hashFiles(format('{0}/action.yaml', github.action_path)) }}
 
     - name: Install Poetry
@@ -57,7 +57,7 @@ runs:
     - name: Ensure cache is healthy
       if: steps.cached-poetry-venv.outputs.cache-hit == 'true'
       shell: bash
-      run: timeout 10s poetry run pip --version || rm -rf .venv
+      run: timeout 10s poetry run pip --version || rm -rf ${{ steps.get-venv-path.outputs.venv-path }}
     # install dependencies if cache does not exist
     - name: Check cache and install dependencies
       shell: bash
