@@ -44,7 +44,7 @@ runs:
       run: |
         # init the env / venv path
         poetry install --dry-run
-        echo "::set-output name=venv-path::$(poetry env info -p)"
+        echo "venv-path=$(poetry env info -p)" >> $GITHUB_OUTPUT
     - name: venv path
       shell: bash
       run: echo "got venv path ${{ steps.get-venv-path.outputs.venv-path }}"
