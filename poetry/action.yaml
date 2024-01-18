@@ -15,7 +15,7 @@ runs:
   using: "composite"
   steps:
     - name: Set up python ${{ inputs.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python-version }}
     - name: Get Python version
@@ -23,7 +23,7 @@ runs:
       run: |
         echo "PYTHON_VERSION=$(python --version | awk '{ print $NF }')" >> $GITHUB_ENV
     - name: Load cached Poetry installation
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.local
         key: dotlocal-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-0
@@ -50,7 +50,7 @@ runs:
       run: echo "got venv path ${{ steps.get-venv-path.outputs.venv-path }}"
     - name: Load cached venv
       id: cached-poetry-venv
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ${{ steps.get-venv-path.outputs.venv-path }}
         key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
