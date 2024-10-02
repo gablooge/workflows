@@ -1,0 +1,39 @@
+name: "Install UV"
+author: "@grizz"
+
+inputs:
+  python-version:
+    required: false
+    default: 3.x
+    type: string
+outputs:
+  uv-path:
+    description: "Path to uv environment"
+    value: ${{ steps.get-uv-path.outputs.uv-path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up python ${{ inputs.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+    
+    - name: Get Python version
+      shell: bash
+      run: |
+        echo "PYTHON_VERSION=$(python --version | awk '{ print $NF }')" >> $GITHUB_ENV
+
+    - name: Install UV
+      run: |
+        pip install uv
+    
+    - name: Get UV environment path
+      id: get-uv-path
+      shell: bash
+      run: |
+        echo "uv-path=$(which uv)" >> $GITHUB_OUTPUT
+    
+    - name: Output UV path
+      shell: bash
+      run: echo "Got UV path ${{ steps.get-uv-path.outputs.uv-path }}"
