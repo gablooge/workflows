@@ -1,0 +1,64 @@
+name: "Install UV and cached"
+author: "@grizz"
+
+inputs:
+  python-version:
+    required: false
+    default: 3.x
+    type: string
+outputs:
+  uv-path:
+    description: "Path to uv environment"
+    value: ${{ steps.get-uv-path.outputs.uv-path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up python ${{ inputs.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Get Python version
+      shell: bash
+      run: |
+        echo "PYTHON_VERSION=$(python --version | awk '{ print $NF }')" >> $GITHUB_ENV
+
+    - name: Define uv cache path
+      uses: astral-sh/setup-uv@v3
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+        cache-local-path: ${{ steps.get-uv-path.outputs.uv-path }}
+
+    - name: Install uv
+      shell: bash
+      run: |
+        pip install uv
+
+    - name: Get UV environment path
+      id: get-uv-path
+      shell: bash
+      run: |
+        echo "uv-path=$(which uv)" >> $GITHUB_OUTPUT
+
+    - name: Load cached uv installation
+      id: cached-uv
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.get-uv-path.outputs.uv-path }}
+        key: uv-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-0
+        restore-keys: uv-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-0
+
+    - name: Ensure cache is healthy
+      if: steps.cached-uv.outputs.cache-hit == 'true'
+      shell: bash
+      run: timeout 10s uv run pip --version || rm -rf ${{ steps.get-uv-path.outputs.uv-path }}
+
+    - name: Output UV path
+      shell: bash
+      run: echo "Got UV path ${{ steps.get-uv-path.outputs.uv-path }}"
+
+    - name: Install the project
+      shell: bash
+      run: uv sync --all-extras --dev

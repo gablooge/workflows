@@ -4,6 +4,27 @@
 
 [![Tests](https://github.com/20c/workflows/workflows/ci/badge.svg)](https://github.com/20c/workflows/actions/workflows/ci.yaml)
 
+## uv
+
+Action to install and cache uv and the virtualenv it installs to.
+
+```yaml
+inputs:
+  python-version:
+    required: false
+    default: 3.x
+    type: string
+outputs:
+  venv-path:
+    description: "virtualenv path"
+    value: ${{ steps.get-venv-path.outputs.venv-path }}
+```
+
+To use:
+```yaml
+      - name: Install virtualenv from uv
+        uses: 20c/workflows/uv@v1
+```
 
 ## poetry
 
