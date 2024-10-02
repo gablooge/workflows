@@ -42,10 +42,6 @@ runs:
       run: |
         echo "uv-path=$(which uv)" >> $GITHUB_OUTPUT
 
-    - name: Install the project
-      shell: bash
-      run: uv sync --all-extras --dev
-
     - name: Load cached uv installation
       id: cached-uv
       uses: actions/cache@v4
@@ -62,3 +58,7 @@ runs:
     - name: Output UV path
       shell: bash
       run: echo "Got UV path ${{ steps.get-uv-path.outputs.uv-path }}"
+
+    - name: Install the project
+      shell: bash
+      run: uv sync --all-extras --dev
