@@ -24,6 +24,13 @@ runs:
       run: |
         echo "PYTHON_VERSION=$(python --version | awk '{ print $NF }')" >> $GITHUB_ENV
 
+    - name: Load cached uv installation
+      uses: actions/cache@v4
+      with:
+        path: ~/.local
+        key: uv-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-0
+        restore-keys: uv-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-0
+
     - name: Install uv
       shell: bash
       run: |
