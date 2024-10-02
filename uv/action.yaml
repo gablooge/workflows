@@ -1,4 +1,4 @@
-name: "Install UV"
+name: "Install UV and cached"
 author: "@grizz"
 
 inputs:
@@ -18,13 +18,14 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python-version }}
-    
+
     - name: Get Python version
       shell: bash
       run: |
         echo "PYTHON_VERSION=$(python --version | awk '{ print $NF }')" >> $GITHUB_ENV
 
-    - name: Install UV
+    - name: Install uv
+      shell: bash
       run: |
         pip install uv
     
