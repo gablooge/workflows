@@ -42,6 +42,7 @@ runs:
       id: get-venv-path
       shell: bash
       run: |
+        uv sync --all-extras --dev
         echo "venv-path=$(python -c 'import sys; print(sys.prefix)')" >> $GITHUB_OUTPUT
     
     - name: venv path
@@ -53,7 +54,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ steps.get-venv-path.outputs.venv-path }}
-        key: venv-${{ runner.os }}-py${{ hashFiles('**/uv.lock') }}
+        key: venv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
 
     - name: Ensure cache is healthy
       if: steps.cached-uv-venv.outputs.cache-hit == 'true'
