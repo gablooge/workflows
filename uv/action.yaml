@@ -7,9 +7,9 @@ inputs:
     default: 3.x
     type: string
 outputs:
-  uv-path:
+  venv-path:
     description: "Path to uv environment"
-    value: ${{ steps.get-uv-path.outputs.uv-path }}
+    value: ${{ steps.get-venv-path.outputs.venv-path }}
 
 runs:
   using: "composite"
@@ -24,41 +24,42 @@ runs:
       run: |
         echo "PYTHON_VERSION=$(python --version | awk '{ print $NF }')" >> $GITHUB_ENV
 
-    - name: Define uv cache path
+    - name: Load uv cache installation
+      uses: actions/cache@v4
+      with:
+        path: ~/.local
+        key: dotlocal-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-0
+
+    - name: Install uv
       uses: astral-sh/setup-uv@v3
       with:
         enable-cache: true
-        cache-dependency-glob: "uv.lock"
-        cache-local-path: ${{ steps.get-uv-path.outputs.uv-path }}
+    - name: Get virtualenv path
+      shell: bash
+      run: echo "VENV_PATH=$(python -c 'import sys; print(sys.prefix)')" >> $GITHUB_ENV
 
-    - name: Install uv
+    - name: Get virtualenv path
+      id: get-venv-path
       shell: bash
       run: |
-        pip install uv
-
-    - name: Get UV environment path
-      id: get-uv-path
+        echo "venv-path=$(python -c 'import sys; print(sys.prefix)')" >> $GITHUB_OUTPUT
+    
+    - name: venv path
       shell: bash
-      run: |
-        echo "uv-path=$(which uv)" >> $GITHUB_OUTPUT
+      run: echo "got venv path ${{ steps.get-venv-path.outputs.venv-path }}"
 
     - name: Load cached uv installation
-      id: cached-uv
+      id: cached-uv-venv
       uses: actions/cache@v4
       with:
-        path: ${{ steps.get-uv-path.outputs.uv-path }}
-        key: uv-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-0
-        restore-keys: uv-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-0
+        path: ${{ steps.get-venv-path.outputs.venv-path }}
+        key: venv-${{ runner.os }}-py${{ hashFiles('**/uv.lock') }}
 
     - name: Ensure cache is healthy
-      if: steps.cached-uv.outputs.cache-hit == 'true'
+      if: steps.cached-uv-venv.outputs.cache-hit == 'true'
       shell: bash
-      run: timeout 10s uv run pip --version || rm -rf ${{ steps.get-uv-path.outputs.uv-path }}
+      run: timeout 10s uv run pip --version || rm -rf ${{ steps.get-venv-path.outputs.venv-path }}
 
-    - name: Output UV path
-      shell: bash
-      run: echo "Got UV path ${{ steps.get-uv-path.outputs.uv-path }}"
-
-    - name: Install the project
+    - name: Check cache and install dependencies
       shell: bash
       run: uv sync --all-extras --dev
